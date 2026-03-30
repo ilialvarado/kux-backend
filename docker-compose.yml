@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kux_db
+      POSTGRES_USER: kux_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kux_secure_2026}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kux_admin -d kux_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: kux_db
+      DB_USER: kux_admin
+      DB_PASSWORD: ${DB_PASSWORD:-kux_secure_2026}
+      JWT_SECRET: ${JWT_SECRET:-cambia_este_secret_en_produccion}
+      JWT_EXPIRES_IN: 7d
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5500}
+      QR_BASE_URL: ${QR_BASE_URL:-https://kux.com/checkin}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
