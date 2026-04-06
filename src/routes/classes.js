@@ -5,6 +5,17 @@ const router = require('express').Router();
 const { query } = require('../config/database');
 const { authenticate, authorize } = require('../middleware/auth');
 
+// GET /api/classes/types — Listar tipos de clase disponibles
+router.get('/types', async (req, res) => {
+  try {
+    const result = await query('SELECT id, name, slug, color, duration_min, max_capacity FROM class_types WHERE is_active = true ORDER BY name');
+    res.json({ types: result.rows });
+  } catch (err) {
+    console.error('[Classes] Error tipos:', err);
+    res.status(500).json({ error: 'Error obteniendo tipos de clase' });
+  }
+});
+
 // GET /api/classes — Listar clases programadas
 router.get('/', async (req, res) => {
   try {

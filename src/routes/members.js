@@ -42,9 +42,10 @@ router.get('/', authenticate, authorize('owner', 'manager', 'staff'), async (req
         SELECT * FROM memberships WHERE user_id = u.id ORDER BY created_at DESC LIMIT 1
       ) m ON true
       LEFT JOIN membership_plans mp ON m.plan_id = mp.id
-      WHERE u.role = 'client'
+      WHERE u.role = $1
     `;
-    const params = [];
+    const roleFilter = req.query.role || 'client';
+    const params = [roleFilter];
 
     if (status && status !== 'all') {
       params.push(status);
