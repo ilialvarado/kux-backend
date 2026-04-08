@@ -68,11 +68,11 @@ router.post('/', authenticate, authorize('owner', 'manager', 'staff'), async (re
         await client.query(
           `INSERT INTO pos_sale_items (sale_id, product_id, plan_id, name, quantity, unit_price, total)
            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [saleId, item.productId || null, item.planId || null, item.name, item.quantity, item.unitPrice, item.unitPrice * item.quantity]
+          [saleId, (item.productId && String(item.productId).includes('-')) ? item.productId : null, (item.planId && String(item.planId).includes('-')) ? item.planId : null, item.name, item.quantity, item.unitPrice, item.unitPrice * item.quantity]
         );
 
         // Actualizar stock si es producto
-        if (item.productId) {
+        if (item.productId && String(item.productId).includes('-')) {
           await client.query(
             'UPDATE products SET stock = stock - $1 WHERE id = $2',
             [item.quantity, item.productId]
