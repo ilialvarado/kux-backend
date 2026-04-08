@@ -132,7 +132,7 @@ router.post('/cash-register/:id/close', authenticate, authorize('owner', 'manage
     const result = await query(
       `UPDATE cash_registers
        SET closed_at = NOW(), closing_amount = $1, expected_amount = $2,
-           difference = $1 - $2, notes = $3, status = 'closed'
+           difference = CAST($1 AS numeric) - CAST($2 AS numeric), notes = $3, status = 'closed'
        WHERE id = $4 RETURNING *`,
       [closingAmount, expectedAmount, notes, req.params.id]
     );
